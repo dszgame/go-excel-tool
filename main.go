@@ -118,7 +118,7 @@ func excelExport(file string, sheetName string, outjson string, outlua string) (
 						switch data.sVaueType {
 						case "string":
 							rowstr += fmt.Sprintf(`"%v":"%v",`, data.sName, colCell)
-							rowstrlua += fmt.Sprintf(`%v="%v",`, data.sName, colCell)
+							rowstrlua += fmt.Sprintf(`%v=[[%v]],`, data.sName, colCell)
 							if keyname == data.sName {
 								keystr = colCell
 							}
@@ -133,7 +133,7 @@ func excelExport(file string, sheetName string, outjson string, outlua string) (
 								}
 							} else {
 								rowstr += fmt.Sprintf(`"%v":"%v",`, data.sName, colCell)
-								rowstrlua += fmt.Sprintf(`%v="%v",`, data.sName, colCell)
+								rowstrlua += fmt.Sprintf(`%v=[[%v]],`, data.sName, colCell)
 								if keyname == data.sName {
 									keystr = colCell
 								}
@@ -142,18 +142,22 @@ func excelExport(file string, sheetName string, outjson string, outlua string) (
 						}
 					} else if data.nArrayLevel == 1 {
 						str := ""
+						luastr := ""
 						ary := strings.Split(colCell, "+")
 						for _, v := range ary {
 							switch data.sVaueType {
 							case "string":
 								str += fmt.Sprintf(`"%v",`, v)
+								luastr += fmt.Sprintf(`[[%v]],`, v)
 								break
 							case "int", "auto":
 								num, err := strconv.Atoi(v)
 								if err == nil { // 数值转换错误
 									str += fmt.Sprintf(`%v,`, num)
+									luastr += fmt.Sprintf(`%v,`, num)
 								} else {
 									str += fmt.Sprintf(`"%v",`, v)
+									luastr += fmt.Sprintf(`[[%v]],`, v)
 								}
 								break
 							}
@@ -162,7 +166,7 @@ func excelExport(file string, sheetName string, outjson string, outlua string) (
 							str = str[0 : len(str)-1] // 去掉最后一个,
 						}
 						rowstr += fmt.Sprintf(`"%v":[%v],`, data.sName, str)
-						rowstrlua += fmt.Sprintf(`%v={%v},`, data.sName, str)
+						rowstrlua += fmt.Sprintf(`%v={%v},`, data.sName, luastr)
 					} else if data.nArrayLevel == 2 {
 						luastr := ""
 						jsonstr := ""
@@ -176,13 +180,16 @@ func excelExport(file string, sheetName string, outjson string, outlua string) (
 								switch data.sVaueType {
 								case "string":
 									str += fmt.Sprintf(`"%v",`, v)
+									luastr += fmt.Sprintf(`"%v",`, v)
 									break
 								case "int", "auto":
 									num, err := strconv.Atoi(v)
 									if err == nil { // 数值转换错误
 										str += fmt.Sprintf(`%v,`, num)
+										luastr += fmt.Sprintf(`%v,`, num)
 									} else {
 										str += fmt.Sprintf(`"%v",`, v)
+										luastr += fmt.Sprintf(`[[%v]],`, v)
 									}
 									break
 								}
@@ -190,7 +197,7 @@ func excelExport(file string, sheetName string, outjson string, outlua string) (
 							if len(str) > 0 {
 								str = str[0 : len(str)-1] // 去掉最后一个,
 							}
-							luastr += str + "},"
+							luastr += "},"
 							jsonstr += str + "],"
 						}
 
