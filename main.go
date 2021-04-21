@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+	"encoding/json"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 )
@@ -244,7 +246,10 @@ func excelExport(file string, sheetName string, outjson string, outlua string) (
 		jsonstr += "]"
 	}
 	luastr += "}"
+	var str1 bytes.Buffer
+	json.Indent(&str1, []byte(jsonstr), "", "    ")
 
+	jsonstr = str1.String()
 	if outjson != "" {
 		f, err1 := os.OpenFile(outjson, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 		if err1 != nil {
